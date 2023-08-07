@@ -1,6 +1,10 @@
 #pragma once
 
+#include "PacketQueue.h"
+#include "FrameQueue.h"
+
 #include <string>
+#include <SDL2/SDL.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -12,7 +16,7 @@ extern "C"
 }
 #endif
 
-#include <SDL2/SDL.h>
+
 
 using namespace std;
 
@@ -28,24 +32,40 @@ public:
   void stop();
 
 private:
-  string m_file;
+  // static methods for thread entry
+  static int demuxing(void* arg);
+  static int decodeAudio(void* arg);
+  static int decodeVideo(void* arg);
 
+  // private methods
+  bool openCodecContext(AVCodecContext** context, AVStream** stream, int* streamIndex, enum AVMediaType type);
+  bool startDemuxing();
+
+  // fields
+  string m_file;
   bool m_paused;
 
   // demux decode relative
   AVFormatContext* m_formatContext;
+  SDL_Thread* m_demuxThread;
   
   // stream
-  AVStream* m_videoStream;
+  int m_audioStreamIndex;
+  int m_videoStreamIndex;
   AVStream* m_audioStream;
+  AVStream* m_videoStream;
+  
+  // packet queue
+  unique_ptr<PacketQueue> m_audioPacketQueue;
+  unique_ptr<PacketQueue> m_videoPacketQueue;
 
   // decode
-  AVCodecContext* m_videoDecodeContext;
   AVCodecContext* m_audioDecodeContext;
+  AVCodecContext* m_videoDecodeContext;
 
-  // packet queue
   // frame queue
-
+  unique_ptr<FrameQueue> m_audioFrameQueue;
+  unique_ptr<FrameQueue> m_videoFrameQueue;
 
   // clock relative
 

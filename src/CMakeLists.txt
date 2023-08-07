@@ -1,6 +1,10 @@
 add_executable(main
   main.cpp
   Player.cpp
+  Packet.cpp
+  PacketQueue.cpp
+  Frame.cpp
+  FrameQueue.cpp
 )
 
 # include
